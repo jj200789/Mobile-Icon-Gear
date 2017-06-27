@@ -49,7 +49,7 @@ def android(image, dst):
         icon.save(path + "/ic_launcher.png", "PNG")
 
 
-def normalize_src(src):
+def normalize_src(src, mask):
     try:
         image = Image.open(src)
     except IOError:
@@ -65,27 +65,28 @@ def normalize_src(src):
         print "Icon is not a 'Square'"
         exit()
 
-    if width > 1500 or width < 1024:
-        image = image.resize((1500, 1500), Image.BILINEAR)
-        width = 1500
-        height = 1500
+    if mask:
+        if width > 1500 or width < 1024:
+            image = image.resize((1500, 1500), Image.BILINEAR)
+            width = 1500
+            height = 1500
 
-    #replace transparent to white
-    pixals = image.load()
-    for h in xrange(height):
-        for w in xrange(width):
-            if pixals[w, h][3] is 0:
-                pixals[w, h] = (255, 255, 255, 255)
+        #replace transparent to white
+        pixals = image.load()
+        for h in xrange(height):
+            for w in xrange(width):
+                if pixals[w, h][3] is 0:
+                    pixals[w, h] = (255, 255, 255, 255)
 
-    #add fillet
-    mask = Image.open('mask.png')
-    mask = mask.resize((width, height), Image.BILINEAR)
-    r, g, b, a = mask.split()
-    image.putalpha(a)
+        #add fillet
+        mask = Image.open('mask.png')
+        mask = mask.resize((width, height), Image.BILINEAR)
+        r, g, b, a = mask.split()
+        image.putalpha(a)
     return image
 
 
-def check(platform, src, dst):
+def check(platform, src, dst, mask):
     if platform != "Android" and platform != "iOS":
         print "Platform must be Android or iOS"
         exit()
@@ -96,7 +97,7 @@ def check(platform, src, dst):
         print "Destination folder is not exist"
         exit()
 
-    image = normalize_src(src)
+    image = normalize_src(src, mask)
     if platform == "Android":
         android(image, dst)
     elif platform == "iOS":
@@ -109,8 +110,9 @@ def main():
                         choices=["Android", "iOS"], default=None)
     parser.add_argument("-i", "--icon", help="icon file", dest="icon", default=None)
     parser.add_argument("-d", "--destination", help="destination folder", dest="dst", default=None)
+    parser.add_argument("-m", "--mask", help="Need fillet mask", dest="mask", action="store_true", default=False)
     args = parser.parse_args()
-    check(args.platform, args.icon, args.dst)
+    check(args.platform, args.icon, args.dst, args.mask)
 
 if __name__ == '__main__':
     main()
