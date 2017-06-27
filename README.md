@@ -6,4 +6,4 @@ PIL
 argparse
 
 Usage:
-MobileIconGear.py -p [Android | iOS] -i [/path/to/the/icon] -d [/path/to/destination/folder]
+MobileIconGear.py -p [Android | iOS] -i [/path/to/the/icon] -d [/path/to/destination/folder] [-m]
